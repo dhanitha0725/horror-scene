@@ -1,0 +1,8 @@
+Model Information:
+* title:	Horror corridor 1
+* source:	https://sketchfab.com/3d-models/horror-corridor-1-09b4d35847db449bbfa89a84087a8932
+* author:	katydid (https://sketchfab.com/Katydid.)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
