@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
@@ -71,6 +74,7 @@ namespace HorrorGame.Combat
         private Rigidbody rb;
         private AudioSource audioSource;
         private Vector3 lastTipPosition;
+        private Vector3 lastSwingDirection;
         private float currentTipSpeed;
         private float lastHitTime = -999f;
         private bool isHeld = false;
@@ -95,10 +99,19 @@ namespace HorrorGame.Combat
 
             if (batTip == null)
             {
-                // Create a virtual tip child if none was explicitly wired
+                // Create a virtual tip child if none was explicitly wired. Prefer the
+                // longest collider axis: imported bats are commonly aligned to Y, not Z.
                 GameObject tipObj = new GameObject("BatTip_Auto");
                 tipObj.transform.SetParent(transform, false);
-                tipObj.transform.localPosition = Vector3.forward * autoTipDistance;
+                Vector3 tipAxis = Vector3.forward;
+                Collider weaponCollider = GetComponent<Collider>();
+                if (weaponCollider is BoxCollider box)
+                {
+                    Vector3 size = box.size;
+                    if (size.y >= size.x && size.y >= size.z) tipAxis = Vector3.up;
+                    else if (size.x >= size.z) tipAxis = Vector3.right;
+                }
+                tipObj.transform.localPosition = tipAxis * autoTipDistance;
                 batTip = tipObj.transform;
             }
 
@@ -127,7 +140,12 @@ namespace HorrorGame.Combat
             Vector3 tipPos = batTip != null ? batTip.position : transform.position;
             if (Time.deltaTime > 0.0001f)
             {
-                float calculatedSpeed = Vector3.Distance(tipPos, lastTipPosition) / Time.deltaTime;
+                Vector3 tipDelta = tipPos - lastTipPosition;
+                float calculatedSpeed = tipDelta.magnitude / Time.deltaTime;
+                if (tipDelta.sqrMagnitude > 0.000001f)
+                {
+                    lastSwingDirection = tipDelta.normalized;
+                }
                 // Smooth speed slightly to prevent 1-frame jitter
                 currentTipSpeed = Mathf.Lerp(currentTipSpeed, calculatedSpeed, 0.4f);
             }
@@ -136,7 +154,7 @@ namespace HorrorGame.Combat
             // Handle Desktop / OpenXR Mouse Simulator manual swing helper
             if (allowSimulatedSwingAction && isHeld)
             {
-                if (Input.GetKeyDown(simulatedSwingKey) || Input.GetKeyDown(simulatedSwingKeyAlt))
+                if (IsSimulatedSwingPressed())
                 {
                     simulatedSwingTimer = simulatedSwingDuration;
                 }
@@ -148,6 +166,18 @@ namespace HorrorGame.Combat
             }
         }
 
+        private bool IsSimulatedSwingPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            bool mousePressed = simulatedSwingKey == KeyCode.Mouse0 &&
+                                Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+            bool spacePressed = simulatedSwingKeyAlt == KeyCode.Space &&
+                                Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+            return mousePressed || spacePressed;
+#else
+            return Input.GetKeyDown(simulatedSwingKey) || Input.GetKeyDown(simulatedSwingKeyAlt);
+#endif
+        }
         private void OnSelectEntered(SelectEnterEventArgs args)
         {
             isHeld = true;
@@ -164,6 +194,7 @@ namespace HorrorGame.Combat
         private void OnSelectExited(SelectExitEventArgs args)
         {
             isHeld = false;
+            simulatedSwingTimer = 0f;
             onBatDropped?.Invoke();
         }
 
@@ -209,8 +240,8 @@ namespace HorrorGame.Combat
                 }
             }
 
-            // If not held or not swinging with enough force, skip damage
-            if (!isSwinging)
+            // A dropped bat must not cause weapon damage, even if it is still moving.
+            if (!isHeld || !isSwinging)
                 return;
 
             // Look for IDamageable on hit object or its parents
@@ -219,7 +250,7 @@ namespace HorrorGame.Combat
             {
                 lastHitTime = Time.time;
 
-                Vector3 swingDir = (batTip.position - lastTipPosition).normalized;
+                Vector3 swingDir = lastSwingDirection;
                 if (swingDir.sqrMagnitude < 0.01f)
                     swingDir = transform.forward;
 

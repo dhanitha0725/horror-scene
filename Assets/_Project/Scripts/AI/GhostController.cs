@@ -158,11 +158,25 @@ namespace HorrorGame.AI
         /// </summary>
         public void SpawnAndReveal(Vector3 spawnPosition, Quaternion spawnRotation)
         {
-            transform.position = spawnPosition;
             transform.rotation = spawnRotation;
-            if (agent.isOnNavMesh)
+
+            // Warp to a valid point even when the object was initially parked outside
+            // the NavMesh. This keeps the reveal visible and lets the chase begin.
+            if (NavMesh.SamplePosition(spawnPosition, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
             {
-                agent.Warp(spawnPosition);
+                if (agent.enabled)
+                {
+                    agent.Warp(navHit.position);
+                }
+                else
+                {
+                    transform.position = navHit.position;
+                }
+            }
+            else
+            {
+                transform.position = spawnPosition;
+                Debug.LogWarning($"[GhostController:{name}] Reveal point is not on the NavMesh; the ghost will not be able to chase.", this);
             }
 
             SetVisualsActive(true);
