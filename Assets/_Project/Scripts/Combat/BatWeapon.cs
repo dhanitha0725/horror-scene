@@ -38,6 +38,8 @@ namespace HorrorGame.Combat
         [SerializeField] private float autoTipDistance = 0.75f;
         [Tooltip("Layers that can receive damage (e.g. Ghost, Default, Props).")]
         [SerializeField] private LayerMask targetLayers = ~0;
+        [Tooltip("Radius used by the swept tip hit test. Prevents fast VR swings from tunneling through an enemy.")]
+        [SerializeField, Min(0.02f)] private float hitSweepRadius = 0.14f;
 
         [Header("OpenXR Simulator / Desktop Support")]
         [Tooltip("If true, pressing the swing attack key (Left Click or Space) triggers an active swing state with boosted speed calculation for mouse emulation.")]
@@ -86,32 +88,45 @@ namespace HorrorGame.Combat
         public float CurrentTipSpeed => currentTipSpeed;
         public bool HasBeenPickedUpOnce => hasBeenPickedUpOnce;
 
-        private void Awake()
+private void Awake()
         {
             rb = GetComponent<Rigidbody>();
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
             {
                 audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.spatialBlend = 1f; // 3D spatial
+                audioSource.spatialBlend = 1f;
                 audioSource.playOnAwake = false;
             }
 
             if (batTip == null)
             {
-                // Create a virtual tip child if none was explicitly wired. Prefer the
-                // longest collider axis: imported bats are commonly aligned to Y, not Z.
                 GameObject tipObj = new GameObject("BatTip_Auto");
                 tipObj.transform.SetParent(transform, false);
+
                 Vector3 tipAxis = Vector3.forward;
+                float tipDistance = autoTipDistance;
                 Collider weaponCollider = GetComponent<Collider>();
                 if (weaponCollider is BoxCollider box)
                 {
                     Vector3 size = box.size;
-                    if (size.y >= size.x && size.y >= size.z) tipAxis = Vector3.up;
-                    else if (size.x >= size.z) tipAxis = Vector3.right;
+                    if (size.y >= size.x && size.y >= size.z)
+                    {
+                        tipAxis = Vector3.up;
+                        tipDistance = Mathf.Max(tipDistance, Mathf.Abs(box.center.y) + size.y * 0.5f);
+                    }
+                    else if (size.x >= size.z)
+                    {
+                        tipAxis = Vector3.right;
+                        tipDistance = Mathf.Max(tipDistance, Mathf.Abs(box.center.x) + size.x * 0.5f);
+                    }
+                    else
+                    {
+                        tipDistance = Mathf.Max(tipDistance, Mathf.Abs(box.center.z) + size.z * 0.5f);
+                    }
                 }
-                tipObj.transform.localPosition = tipAxis * autoTipDistance;
+
+                tipObj.transform.localPosition = tipAxis * tipDistance;
                 batTip = tipObj.transform;
             }
 
@@ -134,37 +149,73 @@ namespace HorrorGame.Combat
             }
         }
 
-        private void Update()
+private void Update()
         {
-            // Calculate instantaneous tip speed
             Vector3 tipPos = batTip != null ? batTip.position : transform.position;
+            Vector3 tipDelta = tipPos - lastTipPosition;
+
             if (Time.deltaTime > 0.0001f)
             {
-                Vector3 tipDelta = tipPos - lastTipPosition;
                 float calculatedSpeed = tipDelta.magnitude / Time.deltaTime;
                 if (tipDelta.sqrMagnitude > 0.000001f)
-                {
                     lastSwingDirection = tipDelta.normalized;
-                }
-                // Smooth speed slightly to prevent 1-frame jitter
+
                 currentTipSpeed = Mathf.Lerp(currentTipSpeed, calculatedSpeed, 0.4f);
             }
-            lastTipPosition = tipPos;
 
-            // Handle Desktop / OpenXR Mouse Simulator manual swing helper
-            if (allowSimulatedSwingAction && isHeld)
+            if (allowSimulatedSwingAction && isHeld && IsSimulatedSwingPressed())
+                simulatedSwingTimer = simulatedSwingDuration;
+
+            if (isHeld)
             {
-                if (IsSimulatedSwingPressed())
-                {
-                    simulatedSwingTimer = simulatedSwingDuration;
-                }
+                if (tipDelta.sqrMagnitude > 0.000001f)
+                    SweepForHits(lastTipPosition, tipPos);
+                else if (simulatedSwingTimer > 0f)
+                    CheckSimulatedHitOverlap(tipPos);
             }
 
+            lastTipPosition = tipPos;
             if (simulatedSwingTimer > 0f)
-            {
                 simulatedSwingTimer -= Time.deltaTime;
+        }
+
+private void SweepForHits(Vector3 start, Vector3 end)
+        {
+            Vector3 delta = end - start;
+            float distance = delta.magnitude;
+            if (distance <= 0.0001f)
+                return;
+
+            RaycastHit[] hits = Physics.SphereCastAll(
+                start,
+                hitSweepRadius,
+                delta / distance,
+                distance,
+                targetLayers,
+                QueryTriggerInteraction.Collide
+            );
+
+            foreach (RaycastHit hit in hits)
+                ProcessHit(hit.collider.gameObject, hit.point, hit.normal);
+        }
+
+        private void CheckSimulatedHitOverlap(Vector3 tipPosition)
+        {
+            Collider[] hits = Physics.OverlapSphere(
+                tipPosition,
+                hitSweepRadius,
+                targetLayers,
+                QueryTriggerInteraction.Collide
+            );
+
+            foreach (Collider hit in hits)
+            {
+                Vector3 point = hit.ClosestPoint(tipPosition);
+                Vector3 normal = (tipPosition - point).normalized;
+                ProcessHit(hit.gameObject, point, normal);
             }
         }
+
 
         private bool IsSimulatedSwingPressed()
         {
@@ -219,32 +270,30 @@ namespace HorrorGame.Combat
             ProcessHit(other.gameObject, other.ClosestPoint(batTip != null ? batTip.position : transform.position), (transform.position - other.transform.position).normalized);
         }
 
-        private void ProcessHit(GameObject hitObj, Vector3 hitPoint, Vector3 hitNormal)
+private void ProcessHit(GameObject hitObj, Vector3 hitPoint, Vector3 hitNormal)
         {
-            // Cooldown check
             if (Time.time - lastHitTime < hitCooldown)
                 return;
 
-            // Check if layer is in target layers
             if ((targetLayers.value & (1 << hitObj.layer)) == 0)
                 return;
 
-            // Check swing velocity or simulated swing window
-            bool isSwinging = currentTipSpeed >= minSwingSpeed || simulatedSwingTimer > 0f;
-            if (!isSwinging && isHeld)
+            // Damage is deliberately limited to a strong physical swing. A touch,
+            // resting overlap, or mouse-click without meaningful bat movement does
+            // not count as one of the three hits.
+            bool isStrongSwing = currentTipSpeed >= minSwingSpeed;
+            if (!isStrongSwing && isHeld)
             {
-                // In case of fast physics sweep where delta speed wasn't captured in Update:
-                if (rb.linearVelocity.magnitude >= minSwingSpeed * 0.8f || rb.angularVelocity.magnitude >= 3f)
-                {
-                    isSwinging = true;
-                }
+                bool capturedByPhysics = rb.linearVelocity.magnitude >= minSwingSpeed * 0.8f ||
+                                        rb.angularVelocity.magnitude >= 5.5f;
+                bool simulatedButMoving = simulatedSwingTimer > 0f &&
+                                          currentTipSpeed >= minSwingSpeed * 0.6f;
+                isStrongSwing = capturedByPhysics || simulatedButMoving;
             }
 
-            // A dropped bat must not cause weapon damage, even if it is still moving.
-            if (!isHeld || !isSwinging)
+            if (!isHeld || !isStrongSwing)
                 return;
 
-            // Look for IDamageable on hit object or its parents
             IDamageable damageable = hitObj.GetComponentInParent<IDamageable>();
             if (damageable != null && !damageable.IsDead)
             {
@@ -265,12 +314,8 @@ namespace HorrorGame.Combat
 
                 damageable.TakeDamage(damageInfo);
                 onHitTarget?.Invoke();
-
-                // Sound & VFX
                 PlayHitSound(hitPoint);
                 SpawnHitVfx(hitPoint, hitNormal);
-
-                // VR Haptics
                 SendHapticFeedback();
             }
         }
