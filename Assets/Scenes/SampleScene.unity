@@ -952,6 +952,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 734087559}
+    - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 734087566}
   m_SourcePrefab: {fileID: 100100000, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
 --- !u!1 &496835833
 GameObject:
@@ -1388,6 +1391,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -6689036041284674117, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       insertIndex: -1
       addedObject: {fileID: 701485286}
+    - targetCorrespondingSourceObject: {fileID: -6689036041284674117, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 701485287}
   m_SourcePrefab: {fileID: -5645937942226959685, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
 --- !u!1 &701485278 stripped
 GameObject:
@@ -1729,7 +1735,7 @@ MonoBehaviour:
   simulatedSwingKeyAlt: 32
   simulatedSwingDuration: 0.4
   hitClips:
-  - {fileID: 8300000, guid: 7b5d410ce6d306149a76719810276d1c, type: 3}
+  - {fileID: 8300000, guid: f26127f2122b3434b868ec54dde141b9, type: 3}
   hitSoundVolume: 1
   hitVfxPrefab: {fileID: 0}
   hapticIntensity: 0.7
@@ -1746,6 +1752,41 @@ MonoBehaviour:
   onHitTarget:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &701485287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701485278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4512633f0c11f12429585643b6321ffa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BatKeyboardSwing
+  swingKey: 20
+  legacySwingKey: 102
+  windUpAngle: 70
+  followThroughAngle: 110
+  windUpTime: 0.12
+  strikeTime: 0.16
+  recoverTime: 0.25
+  lungeDistance: 0.25
+  swingRightToLeft: 1
+  assistHit: 1
+  assistRange: 1.8
+  assistRadius: 0.4
+  assistLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  assistDamage: 1
+  assistImpactForce: 4.5
+  assistHitClips:
+  - {fileID: 8300000, guid: f26127f2122b3434b868ec54dde141b9, type: 3}
+  assistHitVolume: 1
+  whooshClips: []
+  whooshVolume: 0.8
+  debugLogs: 0
 --- !u!1 &711058556
 GameObject:
   m_ObjectHideFlags: 0
@@ -1805,6 +1846,42 @@ MonoBehaviour:
   penetrationIterations: 3
   debugLogs: 0
   drawGizmo: 1
+--- !u!114 &734087566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 734087552}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e6fd30b0c104d540aef3ce4c43528f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepAudio
+  footstepClips:
+  - {fileID: 8300000, guid: 294217a81f63cba4f81a3b8ddb48fad4, type: 3}
+  - {fileID: 8300000, guid: 43c9dab4b8444ec408d7165f47b80a78, type: 3}
+  - {fileID: 8300000, guid: de278561ed424a14dbe2bb526030e549, type: 3}
+  - {fileID: 8300000, guid: 4be036301fa90904e901dd450b35ca62, type: 3}
+  - {fileID: 8300000, guid: 1e062427b28825545b8f00c815b9b781, type: 3}
+  - {fileID: 8300000, guid: e6a48ab73bba86249a114655cbf0a305, type: 3}
+  - {fileID: 8300000, guid: e8f47483b1e12f944aa49e1caad6387e, type: 3}
+  - {fileID: 8300000, guid: 36481a5e4199b9c4cad0cbfaff3b4103, type: 3}
+  - {fileID: 8300000, guid: 10a315ff1585e51438de74b5c9a6e18a, type: 3}
+  - {fileID: 8300000, guid: 0a035aa936449504d85c127fb226e39e, type: 3}
+  volume: 0.6
+  volumeJitter: {x: 0.85, y: 1}
+  pitchRange: {x: 0.9, y: 1.1}
+  stepDistance: 0.65
+  minSpeed: 0.25
+  teleportThreshold: 0.75
+  stepOnTeleportLanding: 1
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  extraRayLength: 0.6
+  spatialBlend: 0.8
+  debugLogs: 0
 --- !u!1 &792047037
 GameObject:
   m_ObjectHideFlags: 0
@@ -4349,8 +4426,7 @@ MonoBehaviour:
   revealScreamClip: {fileID: 8300000, guid: 7b5d410ce6d306149a76719810276d1c, type: 3}
   chaseScreamClips:
   - {fileID: 8300000, guid: 2f01c9eed09c558429e39da250d5edd0, type: 3}
-  painClips:
-  - {fileID: 8300000, guid: 7b5d410ce6d306149a76719810276d1c, type: 3}
+  painClips: []
   deathClip: {fileID: 0}
   masterVolume: 1
   pitchVariation: {x: 0.92, y: 1.08}
@@ -4513,6 +4589,16 @@ MonoBehaviour:
   collapseDuration: 0.8
   collapseAngle: 82
   proximityWarningAudio: {fileID: 2130240658}
+  deathScreamClip: {fileID: 8300000, guid: 008963e79a4041a4dbdb806b1c2e77a7, type: 3}
+  deathScreamVolume: 1
+  deathScreamPitch: {x: 0.95, y: 1.05}
+  addEcho: 1
+  echoDelay: 0.32
+  echoDecay: 0.5
+  echoCount: 6
+  tailSeconds: 3
+  addReverb: 1
+  reverbPreset: 14
 --- !u!134 &2059741259
 PhysicsMaterial:
   m_ObjectHideFlags: 0
