@@ -65,6 +65,10 @@ public class FlickeringLight : MonoBehaviour
 
     public FlickerStyle Style => style;
     public bool IsFlickerEnabled => flickerEnabled;
+    public Color EmissionColor => emissionColor;
+
+    /// <summary>Change the bulb glow colour (HDR). Brightness still follows the flicker.</summary>
+    public void SetEmissionColor(Color color) { emissionColor = color; }
 
     private void Awake()
     {

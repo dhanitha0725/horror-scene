@@ -38,7 +38,7 @@ namespace HorrorGame.AI
         [Tooltip("Seconds the ghost stands twitching and staring before starting the chase.")]
         [SerializeField, Min(0.5f)] private float stareDuration = 2.0f;
         [Tooltip("NavMesh chase speed.")]
-        [SerializeField, Min(1f)] private float chaseSpeed = 3.2f;
+        [SerializeField, Min(0.05f)] private float chaseSpeed = 3.2f;
         [Tooltip("NavMesh acceleration.")]
         [SerializeField, Min(5f)] private float chaseAcceleration = 14f;
         [Tooltip("Distance at which ghost attacks.")]
