@@ -1730,7 +1730,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   hitSweepRadius: 0.14
-  allowSimulatedSwingAction: 1
+  onlyExternalSwings: 1
+  allowSimulatedSwingAction: 0
   simulatedSwingKey: 323
   simulatedSwingKeyAlt: 32
   simulatedSwingDuration: 0.4
@@ -2824,6 +2825,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1410904698}
+  - component: {fileID: 1410904699}
   m_Layer: 0
   m_Name: HorrorLights
   m_TagString: Untagged
@@ -2852,6 +2854,27 @@ Transform:
   - {fileID: 1603179999}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1410904699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410904697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f36139f5052e0b340a5c6886414d2b17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HorrorLightMood
+  lights: []
+  redLightColor: {r: 1, g: 0.08, b: 0.05, a: 1}
+  redBulbEmission: {r: 4, g: 0.25, b: 0.15, a: 1}
+  redIntensityMultiplier: 1.2
+  tintFog: 1
+  redFogColor: {r: 0.09, g: 0, b: 0, a: 1}
+  transitionTime: 0.5
+  flickerBurstOnChange: 1
+  debugLogs: 0
 --- !u!1 &1412904810 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2529930714829946279, guid: ce4277df59c040341ab521230d5a9f52, type: 3}
@@ -4354,7 +4377,19 @@ MonoBehaviour:
   maxTwitchAngle: 25
   onGhostRevealed:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1410904699}
+        m_TargetAssemblyTypeName: HorrorLightMood, Assembly-CSharp
+        m_MethodName: GoRed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onGhostChaseStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -4366,7 +4401,19 @@ MonoBehaviour:
       m_Calls: []
   onGhostDefeated:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1410904699}
+        m_TargetAssemblyTypeName: HorrorLightMood, Assembly-CSharp
+        m_MethodName: GoNormal
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!4 &2013362183
 Transform:
   m_ObjectHideFlags: 0
@@ -4395,7 +4442,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8215663179172d46b83a879d622e90d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HorrorGame.AI.GhostDamageReceiver
-  maxHits: 3
+  maxHits: 7
   invulnerabilityDuration: 0.4
   hitVfxPrefab: {fileID: 0}
   defeatVfxPrefab: {fileID: 0}
