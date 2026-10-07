@@ -5300,7 +5300,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HorrorGame.AI.GhostAudio
   whisperClips:
   - {fileID: 8300000, guid: fb051d673c542454298a9f861b904909, type: 3}
-  revealScreamClip: {fileID: 8300000, guid: 7b5d410ce6d306149a76719810276d1c, type: 3}
+  revealScreamClip: {fileID: 8300000, guid: 0f47de87c87b88c4ea5000866e2db784, type: 3}
   chaseScreamClips:
   - {fileID: 8300000, guid: 2f01c9eed09c558429e39da250d5edd0, type: 3}
   painClips: []
@@ -5309,6 +5309,8 @@ MonoBehaviour:
   pitchVariation: {x: 0.92, y: 1.08}
   min3DDistance: 1
   max3DDistance: 25
+  whisperIntervalMin: 2
+  whisperIntervalMax: 4
 --- !u!82 &2013362186
 AudioSource:
   m_ObjectHideFlags: 0
