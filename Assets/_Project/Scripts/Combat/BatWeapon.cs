@@ -40,6 +40,8 @@ namespace HorrorGame.Combat
         [SerializeField] private LayerMask targetLayers = ~0;
         [Tooltip("Radius used by the swept tip hit test. Prevents fast VR swings from tunneling through an enemy.")]
         [SerializeField, Min(0.02f)] private float hitSweepRadius = 0.14f;
+        [Tooltip("If true, hits only count while an external swing (BatKeyboardSwing F key) is active. Mouse-turn / touch hits are ignored.")]
+        [SerializeField] private bool onlyExternalSwings = false;
 
         [Header("OpenXR Simulator / Desktop Support")]
         [Tooltip("If true, pressing the swing attack key (Left Click or Space) triggers an active swing state with boosted speed calculation for mouse emulation.")]
@@ -85,6 +87,8 @@ namespace HorrorGame.Combat
         private XRGrabInteractable grabInteractable;
 
         public bool IsHeld => isHeld;
+        /// <summary>Set by an external swing driver (BatKeyboardSwing) while a swing is in progress.</summary>
+        public bool ExternalSwingActive { get; set; }
         public float CurrentTipSpeed => currentTipSpeed;
         public bool HasBeenPickedUpOnce => hasBeenPickedUpOnce;
 
@@ -272,6 +276,7 @@ private void SweepForHits(Vector3 start, Vector3 end)
 
 private void ProcessHit(GameObject hitObj, Vector3 hitPoint, Vector3 hitNormal)
         {
+            if (onlyExternalSwings && !ExternalSwingActive) return; // e.g. only F-key swings count
             if (Time.time - lastHitTime < hitCooldown)
                 return;
 
