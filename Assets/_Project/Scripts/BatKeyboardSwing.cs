@@ -93,6 +93,7 @@ public class BatKeyboardSwing : MonoBehaviour
         if (weapon != null) weapon.onHitTarget.RemoveListener(OnWeaponHit);
         RestoreAttach();
         swinging = false;
+        if (weapon != null) weapon.ExternalSwingActive = false;
     }
 
     private void OnWeaponHit()
@@ -136,6 +137,7 @@ public class BatKeyboardSwing : MonoBehaviour
 
         swinging = true;
         weaponHitDuringSwing = false;
+        if (weapon != null) weapon.ExternalSwingActive = true;
         activeAttach = attach;
         attachBaseRot = attach.localRotation;
         attachBasePos = attach.localPosition;
@@ -191,6 +193,7 @@ public class BatKeyboardSwing : MonoBehaviour
     {
         RestoreAttach();
         swinging = false;
+        if (weapon != null) weapon.ExternalSwingActive = false;
         Log(weaponHitDuringSwing ? "Swing finished: BatWeapon registered a hit." : "Swing finished.");
     }
 
