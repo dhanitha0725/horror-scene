@@ -10,7 +10,6 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 /// Put it on the same object as the XRGrabInteractable (e.g. the bat).
 /// </summary>
 [DisallowMultipleComponent]
-[RequireComponent(typeof(XRGrabInteractable))]
 public class PickupHighlight : MonoBehaviour
 {
     [Header("Outline Glow")]
@@ -55,12 +54,12 @@ public class PickupHighlight : MonoBehaviour
 
     private void OnEnable()
     {
-        grab.selectEntered.AddListener(OnGrabbed);
+        if (grab != null) grab.selectEntered.AddListener(OnGrabbed);
     }
 
     private void OnDisable()
     {
-        grab.selectEntered.RemoveListener(OnGrabbed);
+        if (grab != null) grab.selectEntered.RemoveListener(OnGrabbed);
     }
 
     private void Update()
