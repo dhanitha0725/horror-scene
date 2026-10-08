@@ -6476,6 +6476,9 @@ MonoBehaviour:
   fadeOutDuration: 0.75
   playStartSound: {fileID: 8300000, guid: c1e85918f41ff2840b250fb647282330, type: 3}
   audioSource: {fileID: 0}
+  backgroundMusic: {fileID: 8300000, guid: 585d4382469c75144a7ec177d811bab6, type: 3}
+  musicAudioSource: {fileID: 0}
+  musicVolume: 0.6
   overviewPanel: {fileID: 0}
   controlsInfoPanel: {fileID: 0}
   playButton: {fileID: 1753702700}
