@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 
 namespace HorrorGame.UI
 {
@@ -101,6 +102,26 @@ namespace HorrorGame.UI
         {
             if (isStarting) return;
 
+#if ENABLE_INPUT_SYSTEM
+            // New Input System path (project uses activeInputHandler: Input System only)
+            var kb = Keyboard.current;
+            if (kb != null)
+            {
+                // Desktop & XR Device Simulator fallback controls
+                if (kb[Key.Enter].wasPressedThisFrame || kb[Key.NumpadEnter].wasPressedThisFrame || kb[Key.Space].wasPressedThisFrame)
+                {
+                    OnPlayClicked();
+                }
+
+                // Quick recenter hotkey for development/testing
+                if (kb[Key.R].wasPressedThisFrame || kb[Key.F12].wasPressedThisFrame)
+                {
+                    PositionInFrontOfPlayer();
+                }
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            // Legacy Input Manager fallback (only compiled when old Input is enabled)
             // Desktop & XR Device Simulator fallback controls
             if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space))
             {
@@ -112,6 +133,7 @@ namespace HorrorGame.UI
             {
                 PositionInFrontOfPlayer();
             }
+#endif
         }
 
         /// <summary>
