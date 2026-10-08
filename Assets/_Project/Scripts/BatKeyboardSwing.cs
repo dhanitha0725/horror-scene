@@ -27,6 +27,10 @@ public class BatKeyboardSwing : MonoBehaviour
 #endif
     [Tooltip("Key used if the project runs the old Input Manager.")]
     [SerializeField] private KeyCode legacySwingKey = KeyCode.F;
+    [Tooltip("Swing with the left mouse button.")]
+    [SerializeField] private bool swingWithLeftClick = true;
+    [Tooltip("Also allow the keyboard key above to swing.")]
+    [SerializeField] private bool swingWithKey = false;
 
     [Header("Swing Motion")]
     [Tooltip("Degrees the bat pulls back before striking.")]
@@ -40,6 +44,14 @@ public class BatKeyboardSwing : MonoBehaviour
     [SerializeField, Min(0f)] private float lungeDistance = 0.25f;
     [Tooltip("true = swing right-to-left, false = left-to-right.")]
     [SerializeField] private bool swingRightToLeft = true;
+    [Tooltip("Degrees the bat tilts further back over the shoulder during the wind-up.")]
+    [SerializeField, Range(-60f, 60f)] private float windUpPitch = -20f;
+    [Tooltip("Degrees the bat tips forward on the strike. ~110 brings a shoulder-held bat level in front.")]
+    [SerializeField, Range(0f, 180f)] private float strikePitch = 110f;
+    [Tooltip("Swing toward the nearest enemy: enemy on the left = right-to-left, on the right = left-to-right.")]
+    [SerializeField] private bool autoDirection = true;
+    [Tooltip("How far to look for an enemy when choosing the swing direction (metres).")]
+    [SerializeField, Min(0.5f)] private float autoDirectionRange = 4f;
 
     [Header("Assist Hit")]
     [Tooltip("If the physical arc misses, still hit a damageable target directly in front.")]
@@ -116,10 +128,12 @@ public class BatKeyboardSwing : MonoBehaviour
     private bool SwingPressed()
     {
 #if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current != null && Keyboard.current[swingKey].wasPressedThisFrame) return true;
+        if (swingWithLeftClick && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) return true;
+        if (swingWithKey && Keyboard.current != null && Keyboard.current[swingKey].wasPressedThisFrame) return true;
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
-        if (Input.GetKeyDown(legacySwingKey)) return true;
+        if (swingWithLeftClick && Input.GetMouseButtonDown(0)) return true;
+        if (swingWithKey && Input.GetKeyDown(legacySwingKey)) return true;
 #endif
         return false;
     }
@@ -149,26 +163,33 @@ public class BatKeyboardSwing : MonoBehaviour
         if (worldFwd.sqrMagnitude < 0.01f) worldFwd = transform.forward;
         Vector3 axisLocal = parent != null ? parent.InverseTransformDirection(worldUp) : worldUp;
         Vector3 fwdLocal = parent != null ? parent.InverseTransformDirection(worldFwd) : worldFwd;
-        float dir = swingRightToLeft ? 1f : -1f;
+        Vector3 worldRight = Vector3.Cross(worldUp, worldFwd).normalized;
+        Vector3 rightLocal = parent != null ? parent.InverseTransformDirection(worldRight) : worldRight;
+        float dir = swingRightToLeft ? -1f : 1f; // default: wind-up right, strike sweeps left
+        if (autoDirection && TryGetTargetSide(worldRight, out float side))
+        {
+            dir = side < 0f ? -1f : 1f; // enemy on the left -> sweep left; on the right -> sweep right
+            Log(side < 0f ? "Enemy on the LEFT: swinging right-to-left." : "Enemy on the RIGHT: swinging left-to-right.");
+        }
 
         // 1. Wind-up
-        yield return Animate(0f, -windUpAngle * dir, 0f, 0f, windUpTime, axisLocal, fwdLocal, easeIn: false);
+        yield return Animate(0f, -windUpAngle * dir, 0f, windUpPitch, 0f, 0f, windUpTime, axisLocal, rightLocal, fwdLocal, easeIn: false);
         if (!StillHeld()) { EndSwing(); yield break; }
 
         // 2. Strike
         PlayWhoosh();
-        yield return Animate(-windUpAngle * dir, followThroughAngle * dir, 0f, lungeDistance, strikeTime, axisLocal, fwdLocal, easeIn: true);
+        yield return Animate(-windUpAngle * dir, followThroughAngle * dir, windUpPitch, strikePitch, 0f, lungeDistance, strikeTime, axisLocal, rightLocal, fwdLocal, easeIn: true);
         if (!StillHeld()) { EndSwing(); yield break; }
 
         if (assistHit && !weaponHitDuringSwing) TryAssistHit();
 
         // 3. Recover
-        yield return Animate(followThroughAngle * dir, 0f, lungeDistance, 0f, recoverTime, axisLocal, fwdLocal, easeIn: false);
+        yield return Animate(followThroughAngle * dir, 0f, strikePitch, 0f, lungeDistance, 0f, recoverTime, axisLocal, rightLocal, fwdLocal, easeIn: false);
         EndSwing();
     }
 
-    private IEnumerator Animate(float fromAngle, float toAngle, float fromLunge, float toLunge, float duration,
-                                Vector3 axisLocal, Vector3 fwdLocal, bool easeIn)
+    private IEnumerator Animate(float fromAngle, float toAngle, float fromPitch, float toPitch, float fromLunge, float toLunge, float duration,
+                                Vector3 axisLocal, Vector3 rightLocal, Vector3 fwdLocal, bool easeIn)
     {
         float t = 0f;
         while (t < 1f)
@@ -178,7 +199,8 @@ public class BatKeyboardSwing : MonoBehaviour
             float e = easeIn ? t * t : 1f - (1f - t) * (1f - t);
             float angle = Mathf.Lerp(fromAngle, toAngle, e);
             float lunge = Mathf.Lerp(fromLunge, toLunge, e);
-            activeAttach.localRotation = Quaternion.AngleAxis(angle, axisLocal) * attachBaseRot;
+            float pitch = Mathf.Lerp(fromPitch, toPitch, e);
+            activeAttach.localRotation = Quaternion.AngleAxis(angle, axisLocal) * Quaternion.AngleAxis(pitch, rightLocal) * attachBaseRot;
             activeAttach.localPosition = attachBasePos + fwdLocal * lunge;
             yield return null;
         }
@@ -264,6 +286,29 @@ public class BatKeyboardSwing : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(clip, point, assistHitVolume);
         }
+    }
+
+    /// <summary>Finds the nearest living enemy and returns which side of the bat it is on (negative = left).</summary>
+    private bool TryGetTargetSide(Vector3 worldRight, out float side)
+    {
+        side = 0f;
+        Collider[] cols = Physics.OverlapSphere(transform.position, autoDirectionRange, assistLayers, QueryTriggerInteraction.Collide);
+        float bestDist = float.MaxValue;
+        Transform best = null;
+        foreach (Collider c in cols)
+        {
+            IDamageable d = c.GetComponentInParent<IDamageable>();
+            if (d == null || d.IsDead) continue;
+            Component comp = d as Component;
+            if (comp == null) continue;
+            float dist = (comp.transform.position - transform.position).sqrMagnitude;
+            if (dist < bestDist) { bestDist = dist; best = comp.transform; }
+        }
+        if (best == null) return false;
+        Vector3 to = Vector3.ProjectOnPlane(best.position - transform.position, Vector3.up);
+        side = Vector3.Dot(to, worldRight);
+        if (Mathf.Abs(side) < 0.05f) side = swingRightToLeft ? -1f : 1f; // dead ahead: use default
+        return true;
     }
 
     private void PlayWhoosh()
