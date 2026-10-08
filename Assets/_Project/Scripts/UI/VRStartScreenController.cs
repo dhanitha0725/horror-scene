@@ -33,6 +33,12 @@ namespace HorrorGame.UI
         [SerializeField] private AudioClip playStartSound;
         [SerializeField] private AudioSource audioSource;
 
+        [Header("Background Music")]
+        [Tooltip("Background music track played in a loop while the start screen is open.")]
+        [SerializeField] private AudioClip backgroundMusic;
+        [SerializeField] private AudioSource musicAudioSource;
+        [SerializeField, Range(0f, 1f)] private float musicVolume = 0.6f;
+
         [Header("UI Panels")]
         [SerializeField] private GameObject overviewPanel;
         [SerializeField] private GameObject controlsInfoPanel;
@@ -63,6 +69,8 @@ namespace HorrorGame.UI
                 }
             }
 
+            SetupMusicAudioSource();
+
             if (playButton != null)
                 playButton.onClick.AddListener(OnPlayClicked);
 
@@ -70,10 +78,81 @@ namespace HorrorGame.UI
                 infoToggleButton.onClick.AddListener(ToggleInfoPanel);
         }
 
+        private void SetupMusicAudioSource()
+        {
+            if (musicAudioSource == null)
+            {
+                musicAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            musicAudioSource.playOnAwake = false;
+            musicAudioSource.loop = true;
+            musicAudioSource.spatialBlend = 0f; // 2D audio for clear soundtrack
+            musicAudioSource.volume = musicVolume;
+
+            if (backgroundMusic != null)
+            {
+                musicAudioSource.clip = backgroundMusic;
+            }
+        }
+
+        private void PlayBackgroundMusic()
+        {
+            if (musicAudioSource == null || backgroundMusic == null) return;
+            if (musicAudioSource.isPlaying) return;
+            musicAudioSource.volume = musicVolume;
+            if (backgroundMusic.loadState == AudioDataLoadState.Loaded)
+            {
+                musicAudioSource.Play();
+                return;
+            }
+            // Clip uses preloadAudioData=false, so trigger the load explicitly,
+            // then play once ready (covers first import / fresh scene load).
+            if (backgroundMusic.loadState == AudioDataLoadState.Unloaded)
+            {
+                backgroundMusic.LoadAudioData();
+            }
+            StartCoroutine(PlayMusicWhenLoaded());
+        }
+
+        private IEnumerator PlayMusicWhenLoaded()
+        {
+            // Wait until the clip is ready, but don't block the screen if it fails.
+            float timeout = 10f;
+            while (backgroundMusic != null && backgroundMusic.loadState == AudioDataLoadState.Loading && timeout > 0f)
+            {
+                timeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+            if (isStarting) yield break;
+            if (musicAudioSource != null && backgroundMusic != null
+                && backgroundMusic.loadState == AudioDataLoadState.Loaded
+                && !musicAudioSource.isPlaying && gameObject.activeSelf)
+            {
+                musicAudioSource.volume = musicVolume;
+                musicAudioSource.Play();
+            }
+        }
+
+        private void StopBackgroundMusic()
+        {
+            if (musicAudioSource == null) return;
+            if (musicAudioSource.isPlaying)
+            {
+                musicAudioSource.Stop();
+            }
+        }
+
+        private void OnDisable()
+        {
+            StopBackgroundMusic();
+        }
+
         private void Start()
         {
             ResolvePlayerReferences();
             PositionInFrontOfPlayer();
+            PlayBackgroundMusic();
 
             if (lockLocomotionUntilPlay && playerCharacterController != null)
             {
@@ -232,6 +311,9 @@ namespace HorrorGame.UI
             {
                 playerCharacterController.enabled = true;
             }
+
+            // Stop the opening-screen soundtrack now that the screen is closed
+            StopBackgroundMusic();
 
             // Deactivate Start Screen GameObject
             gameObject.SetActive(false);
