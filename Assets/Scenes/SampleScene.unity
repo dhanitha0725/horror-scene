@@ -390,7 +390,7 @@ MonoBehaviour:
   onPlayed:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1674769397}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: FlickeringLight, Assembly-CSharp
         m_MethodName: TriggerBurst
         m_Mode: 1
@@ -1053,19 +1053,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!134 &444497107
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ' (Instance)'
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1001 &472052936
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1080,15 +1067,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4
+      value: 13.79
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 3.5
+      value: 0.49
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1121,7 +1108,7 @@ PrefabInstance:
     - target: {fileID: 6232745470614056090, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_Material
       value: 
-      objectReference: {fileID: 444497107}
+      objectReference: {fileID: 758042895}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1634,19 +1621,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.7
+      value: 12.7
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.55
+      value: 1.45
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.3
+      value: 0.49
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.17364824
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalRotation.x
@@ -1654,11 +1641,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.9848078
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2774220344278030320, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1700,6 +1687,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -6689036041284674117, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
       insertIndex: -1
       addedObject: {fileID: 701485287}
+    - targetCorrespondingSourceObject: {fileID: -6689036041284674117, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 701485288}
   m_SourcePrefab: {fileID: -5645937942226959685, guid: 52aad4d20ead14b4599e160156d8ea27, type: 3}
 --- !u!1 &701485278 stripped
 GameObject:
@@ -1843,7 +1833,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 701485278}
-  m_Material: {fileID: 1131357724}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1879,8 +1869,8 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
+  m_UseGravity: 0
+  m_IsKinematic: 1
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 2
@@ -2094,6 +2084,19 @@ MonoBehaviour:
   whooshClips: []
   whooshVolume: 0.8
   debugLogs: 0
+--- !u!114 &701485288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701485278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e910efe5db53fa45ae036b84c8b4acc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HorrorGame.Progression.BatWallMount
+  lockUntilFirstGrab: 1
 --- !u!1 &711058556
 GameObject:
   m_ObjectHideFlags: 0
@@ -2189,6 +2192,19 @@ MonoBehaviour:
   extraRayLength: 0.6
   spatialBlend: 0.8
   debugLogs: 0
+--- !u!134 &758042895
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ' (Instance) (Instance)'
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &792047037
 GameObject:
   m_ObjectHideFlags: 0
@@ -2665,19 +2681,6 @@ PhysicsMaterial:
   m_Bounciness: 0
   m_FrictionCombine: 0
   m_BounceCombine: 0
---- !u!134 &1131357724
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ' (Instance) (Instance) (Instance) (Instance)'
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1 &1136486018
 GameObject:
   m_ObjectHideFlags: 0
@@ -2713,7 +2716,7 @@ MonoBehaviour:
   ghostSpawnPoint: {fileID: 1461204730}
   corridorLights:
   - {fileID: 496835836}
-  - {fileID: 1674769397}
+  - {fileID: 0}
   - {fileID: 1603180001}
   - {fileID: 1269606609}
   - {fileID: 1536367610}
@@ -4237,10 +4240,9 @@ GameObject:
   - component: {fileID: 1674769395}
   - component: {fileID: 1674769399}
   - component: {fileID: 1674769398}
-  - component: {fileID: 1674769397}
   - component: {fileID: 1674769396}
   m_Layer: 0
-  m_Name: Light_Spawn
+  m_Name: Start Bat Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4255,7 +4257,7 @@ Transform:
   m_GameObject: {fileID: 1674769394}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.5, y: 3.75, z: 3.5}
+  m_LocalPosition: {x: 13.05, y: 3.65, z: 0.49}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4291,35 +4293,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!114 &1674769397
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1674769394}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2de04e769c4e044c8e99a7353082727, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlickeringLight
-  style: 0
-  randomizeSeed: 1
-  seed: 0
-  baseIntensity: 3
-  minIntensityFactor: 0.4
-  noiseSpeed: 8
-  burstChancePerSecond: 0
-  flashesPerBurst: {x: 2, y: 6}
-  offDuration: {x: 0.04, y: 0.25}
-  onDuration: {x: 0.03, y: 0.15}
-  bulbRenderer: {fileID: 375213846}
-  emissionColor: {r: 3, g: 2.1, b: 1.2, a: 1}
-  buzzSource: {fileID: 1674769398}
-  buzzMaxVolume: 0.25
-  clickClip: {fileID: 8300000, guid: 2a0181f8e767b614fa3974f5a2cd045d, type: 3}
-  clickVolume: 1
-  debugLogs: 0
 --- !u!82 &1674769398
 AudioSource:
   m_ObjectHideFlags: 0
@@ -4428,8 +4401,8 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 0.72, b: 0.45, a: 1}
-  m_Intensity: 3
-  m_Range: 7
+  m_Intensity: 5
+  m_Range: 6
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -5305,6 +5278,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 2f01c9eed09c558429e39da250d5edd0, type: 3}
   painClips: []
   deathClip: {fileID: 0}
+  ambientLoopClip: {fileID: 0}
+  silentDistance: 18
+  fullVolumeDistance: 2
+  ambientMaxVolume: 1
+  ambientMinVolume: 0.05
+  nearPitchBoost: 0.08
+  loopGapSeconds: 1.7
   masterVolume: 1
   pitchVariation: {x: 0.92, y: 1.08}
   min3DDistance: 1

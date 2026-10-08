@@ -170,10 +170,15 @@ public class FlickeringLight : MonoBehaviour
     private void Apply(float factor)
     {
         factor = Mathf.Max(0f, factor);
-        lightComp.intensity = baseIntensity * factor;
+
+        if (lightComp == null)
+            lightComp = GetComponent<Light>();
+        if (lightComp != null)
+            lightComp.intensity = baseIntensity * factor;
 
         if (bulbRenderer != null)
         {
+            mpb ??= new MaterialPropertyBlock();
             bulbRenderer.GetPropertyBlock(mpb);
             mpb.SetColor(EmissionId, emissionColor * factor);
             bulbRenderer.SetPropertyBlock(mpb);
