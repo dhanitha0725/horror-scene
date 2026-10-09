@@ -44,8 +44,8 @@ public class LockedSafe : MonoBehaviour
     [SerializeField, TextArea(1, 4)] private string lockedBody = "A heavy iron safe.\nIt won't budge without a <b>key</b>.";
     [SerializeField] private string guardianTitle = "NOT YET";
     [SerializeField, TextArea(1, 4)] private string guardianBody = "Something is still watching over this safe...\nYou can feel her breath on your neck.";
-    [SerializeField] private string openedTitle = "GOLD";
-    [SerializeField, TextArea(1, 4)] private string openedBody = "The lock gives way with a groan.\nWhatever she was guarding... it's yours now.";
+    [SerializeField] private string openedTitle = "HER BONES";
+    [SerializeField, TextArea(1, 4)] private string openedBody = "The lock gives way with a groan.\nInside: only what's left of her. Press <b>F</b> to take them.";
     [SerializeField, Min(0.5f)] private float messageSeconds = 4f;
     [SerializeField] private Color lockedColor = new Color(0.85f, 0.05f, 0.05f);
     [SerializeField] private Color openedColor = new Color(1f, 0.8f, 0.2f);
