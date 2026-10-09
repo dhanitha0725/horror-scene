@@ -13,6 +13,7 @@ namespace HorrorGame.UI
     /// waits for the ghost's final scream to finish, then fades in in front of the player.
     /// "Play Again" reloads the scene and skips the start screen, so the player
     /// begins again at the spawn position with everything reset.
+    /// "Credits" swaps the result text for the credits page; "Back" returns to the result.
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
     [DisallowMultipleComponent]
@@ -35,6 +36,14 @@ namespace HorrorGame.UI
         [SerializeField] private Button playAgainButton;
         [SerializeField, Range(0.2f, 3f)] private float fadeInDuration = 1.2f;
 
+        [Header("Credits")]
+        [Tooltip("Result page: heading, message, Play Again and Credits buttons.")]
+        [SerializeField] private GameObject resultPanel;
+        [Tooltip("Credits page with the Back button (hidden until Credits is clicked).")]
+        [SerializeField] private GameObject creditsPanel;
+        [SerializeField] private Button creditsButton;
+        [SerializeField] private Button backButton;
+
         [Header("Audio (Optional)")]
         [SerializeField] private AudioClip showSound;
         [SerializeField] private AudioClip clickSound;
@@ -49,6 +58,7 @@ namespace HorrorGame.UI
         private bool scheduled;
         private bool isShown;
         private bool isRestarting;
+        private bool showingCredits;
 
         public bool IsShown => isShown;
 
@@ -63,6 +73,8 @@ namespace HorrorGame.UI
                 audioSource.spatialBlend = 0f;
             }
             if (playAgainButton != null) playAgainButton.onClick.AddListener(OnPlayAgainClicked);
+            if (creditsButton != null) creditsButton.onClick.AddListener(ShowCredits);
+            if (backButton != null) backButton.onClick.AddListener(ShowResult);
             Hide();
         }
 
@@ -76,6 +88,7 @@ namespace HorrorGame.UI
                 canvasGroup.blocksRaycasts = false;
             }
             if (contentRoot != null) contentRoot.SetActive(false);
+            SetCreditsVisible(false);
         }
 
         private void Update()
@@ -91,14 +104,26 @@ namespace HorrorGame.UI
             var kb = Keyboard.current;
             if (kb != null)
             {
-                if (kb[Key.Enter].wasPressedThisFrame || kb[Key.NumpadEnter].wasPressedThisFrame || kb[Key.Space].wasPressedThisFrame)
-                    OnPlayAgainClicked();
+                bool confirm = kb[Key.Enter].wasPressedThisFrame || kb[Key.NumpadEnter].wasPressedThisFrame || kb[Key.Space].wasPressedThisFrame;
+                bool back = kb[Key.Escape].wasPressedThisFrame || kb[Key.Backspace].wasPressedThisFrame;
+                if (showingCredits) { if (confirm || back) ShowResult(); }
+                else
+                {
+                    if (confirm) OnPlayAgainClicked();
+                    else if (kb[Key.C].wasPressedThisFrame) ShowCredits();
+                }
                 if (kb[Key.R].wasPressedThisFrame) PositionInFrontOfPlayer();
             }
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space))
-                OnPlayAgainClicked();
+            bool lConfirm = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space);
+            bool lBack = Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace);
+            if (showingCredits) { if (lConfirm || lBack) ShowResult(); }
+            else
+            {
+                if (lConfirm) OnPlayAgainClicked();
+                else if (Input.GetKeyDown(KeyCode.C)) ShowCredits();
+            }
             if (Input.GetKeyDown(KeyCode.R)) PositionInFrontOfPlayer();
 #endif
         }
@@ -119,6 +144,7 @@ namespace HorrorGame.UI
             ResolvePlayerReferences();
             PositionInFrontOfPlayer();
             if (contentRoot != null) contentRoot.SetActive(true);
+            SetCreditsVisible(false);
             if (lockLocomotion && playerCharacterController != null) playerCharacterController.enabled = false;
             if (showSound != null && audioSource != null) audioSource.PlayOneShot(showSound);
 
@@ -136,6 +162,34 @@ namespace HorrorGame.UI
                 canvasGroup.interactable = true;
                 canvasGroup.blocksRaycasts = true;
             }
+        }
+
+        /// <summary>Open the credits page.</summary>
+        public void ShowCredits()
+        {
+            if (isRestarting) return;
+            PlayClick();
+            SetCreditsVisible(true);
+        }
+
+        /// <summary>Return from the credits page to the result page.</summary>
+        public void ShowResult()
+        {
+            if (isRestarting) return;
+            PlayClick();
+            SetCreditsVisible(false);
+        }
+
+        private void SetCreditsVisible(bool visible)
+        {
+            showingCredits = visible && creditsPanel != null;
+            if (creditsPanel != null) creditsPanel.SetActive(showingCredits);
+            if (resultPanel != null) resultPanel.SetActive(!showingCredits);
+        }
+
+        private void PlayClick()
+        {
+            if (clickSound != null && audioSource != null) audioSource.PlayOneShot(clickSound);
         }
 
         [ContextMenu("Center In Front of Player")]
@@ -162,7 +216,7 @@ namespace HorrorGame.UI
 
         public void OnPlayAgainClicked()
         {
-            if (isRestarting) return;
+            if (isRestarting || showingCredits) return;
             StartCoroutine(RestartRoutine());
         }
 
@@ -171,7 +225,7 @@ namespace HorrorGame.UI
             isRestarting = true;
             if (playAgainButton != null) playAgainButton.interactable = false;
             if (canvasGroup != null) canvasGroup.interactable = false;
-            if (clickSound != null && audioSource != null) audioSource.PlayOneShot(clickSound);
+            PlayClick();
 
             float t = 0f;
             while (t < 0.5f)
