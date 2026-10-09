@@ -49,11 +49,24 @@ namespace HorrorGame.UI
         [Header("Player Control Lock (Optional)")]
         [Tooltip("If true, freezes CharacterController movement until Play is clicked.")]
         [SerializeField] private bool lockLocomotionUntilPlay = true;
+        [Tooltip("Objects switched off while the start screen is open (e.g. the XR Origin's Locomotion object), switched back on when Play is clicked.")]
+        [SerializeField] private GameObject[] disableUntilPlay;
+        [Tooltip("Hold the player's head in place until Play is clicked (blocks simulator HMD movement and real walking).")]
+        [SerializeField] private bool freezePlayerPosition = true;
+        [Tooltip("How close (metres) the player may walk to the start screen before Play is clicked. They can move freely inside that area but cannot pass or walk around the screen.")]
+        [SerializeField, Range(0.1f, 1.5f)] private float stopDistanceFromScreen = 0.35f;
+        private float freeMoveRadius;
+
+        private Vector3 frozenHeadPosition;
+        private bool hasFrozenPosition;
 
         private CanvasGroup canvasGroup;
         private CharacterController playerCharacterController;
         private bool isStarting = false;
         private bool isShowingControls = false;
+
+        /// <summary>Set by the end screen's Play Again: after the reload, skip this screen and start playing at once.</summary>
+        public static bool SkipStartScreenOnNextLoad = false;
 
         private void Awake()
         {
@@ -150,6 +163,15 @@ namespace HorrorGame.UI
 
         private void Start()
         {
+            if (SkipStartScreenOnNextLoad)
+            {
+                SkipStartScreenOnNextLoad = false;
+                isStarting = true;
+                StopBackgroundMusic();
+                gameObject.SetActive(false);
+                return;
+            }
+
             ResolvePlayerReferences();
             PositionInFrontOfPlayer();
             PlayBackgroundMusic();
@@ -158,6 +180,10 @@ namespace HorrorGame.UI
             {
                 playerCharacterController.enabled = false;
             }
+
+            SetBlockedObjectsActive(false);
+
+            hasFrozenPosition = false; // captured on the first LateUpdate, once head tracking has settled
 
             // Ensure start screen has full alpha and blocks raycasts initially
             if (canvasGroup != null)
@@ -175,6 +201,27 @@ namespace HorrorGame.UI
                 ResolvePlayerReferences();
                 PositionInFrontOfPlayer();
             }
+        }
+
+        private void LateUpdate()
+        {
+            // Keep the player in front of the start screen until Play is clicked.
+            if (isStarting || !freezePlayerPosition || playerCamera == null) return;
+            if (!hasFrozenPosition)
+            {
+                frozenHeadPosition = playerCamera.transform.position;
+                Vector3 toScreen = transform.position - frozenHeadPosition;
+                toScreen.y = 0f;
+                freeMoveRadius = Mathf.Max(0f, toScreen.magnitude - stopDistanceFromScreen);
+                hasFrozenPosition = true;
+                return;
+            }
+            // Free movement inside a circle around the start point that ends just before the screen.
+            Vector3 drift = playerCamera.transform.position - frozenHeadPosition;
+            drift.y = 0f;
+            float dist = drift.magnitude;
+            if (dist > freeMoveRadius && dist > 0.0001f)
+                playerCamera.transform.root.position -= drift * ((dist - freeMoveRadius) / dist);
         }
 
         private void Update()
@@ -312,11 +359,20 @@ namespace HorrorGame.UI
                 playerCharacterController.enabled = true;
             }
 
+            SetBlockedObjectsActive(true);
+
             // Stop the opening-screen soundtrack now that the screen is closed
             StopBackgroundMusic();
 
             // Deactivate Start Screen GameObject
             gameObject.SetActive(false);
+        }
+
+        private void SetBlockedObjectsActive(bool active)
+        {
+            if (disableUntilPlay == null) return;
+            foreach (var go in disableUntilPlay)
+                if (go != null) go.SetActive(active);
         }
 
         public void ToggleInfoPanel()
