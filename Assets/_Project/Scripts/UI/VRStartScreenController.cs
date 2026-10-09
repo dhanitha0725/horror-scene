@@ -55,6 +55,9 @@ namespace HorrorGame.UI
         private bool isStarting = false;
         private bool isShowingControls = false;
 
+        /// <summary>Set by the end screen's Play Again: after the reload, skip this screen and start playing at once.</summary>
+        public static bool SkipStartScreenOnNextLoad = false;
+
         private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
@@ -150,6 +153,15 @@ namespace HorrorGame.UI
 
         private void Start()
         {
+            if (SkipStartScreenOnNextLoad)
+            {
+                SkipStartScreenOnNextLoad = false;
+                isStarting = true;
+                StopBackgroundMusic();
+                gameObject.SetActive(false);
+                return;
+            }
+
             ResolvePlayerReferences();
             PositionInFrontOfPlayer();
             PlayBackgroundMusic();
