@@ -24,6 +24,8 @@ public class KeyItem : MonoBehaviour
     [SerializeField, Min(0f)] private float revealDelay = 1.5f;
     [Tooltip("Height of the key above the floor (metres).")]
     [SerializeField, Min(0f)] private float hoverHeight = 0.35f;
+    [Tooltip("Place on the floor below the reveal point. Turn off to appear exactly at the reveal point (e.g. inside a safe).")]
+    [SerializeField] private bool snapToFloor = true;
 
     [Header("Idle Animation")]
     [SerializeField] private bool spin = true;
@@ -95,6 +97,12 @@ public class KeyItem : MonoBehaviour
     private void DoReveal(Vector3 at)
     {
         revealPending = false;
+        if (!snapToFloor)
+        {
+            transform.position = at + Vector3.up * hoverHeight;
+            FinishReveal();
+            return;
+        }
         float floorY = at.y;
         var hits = Physics.RaycastAll(at + Vector3.up * 1.5f, Vector3.down, 5f, ~0, QueryTriggerInteraction.Ignore);
         float best = float.MaxValue;
@@ -106,6 +114,11 @@ public class KeyItem : MonoBehaviour
             if (h.distance < best) { best = h.distance; floorY = h.point.y; }
         }
         transform.position = new Vector3(at.x, floorY + hoverHeight, at.z);
+        FinishReveal();
+    }
+
+    private void FinishReveal()
+    {
         if (keyVisual != null) keyVisual.SetActive(true);
         IsRevealed = true;
 
