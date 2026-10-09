@@ -62,7 +62,7 @@ namespace HorrorGame.UI
 
         public bool IsShown => isShown;
 
-        private void Awake()
+private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
             if (audioSource == null) audioSource = GetComponent<AudioSource>();
@@ -72,13 +72,14 @@ namespace HorrorGame.UI
                 audioSource.playOnAwake = false;
                 audioSource.spatialBlend = 0f;
             }
+
             if (playAgainButton != null) playAgainButton.onClick.AddListener(OnPlayAgainClicked);
             if (creditsButton != null) creditsButton.onClick.AddListener(ShowCredits);
             if (backButton != null) backButton.onClick.AddListener(ShowResult);
             Hide();
         }
 
-        private void Hide()
+private void Hide()
         {
             isShown = false;
             if (canvasGroup != null)
@@ -89,6 +90,7 @@ namespace HorrorGame.UI
             }
             if (contentRoot != null) contentRoot.SetActive(false);
             SetCreditsVisible(false);
+            SetUiRaycastersEnabled(false);
         }
 
         private void Update()
@@ -137,7 +139,7 @@ namespace HorrorGame.UI
             StartCoroutine(ShowAfterDelay(0f));
         }
 
-        private IEnumerator ShowAfterDelay(float delay)
+private IEnumerator ShowAfterDelay(float delay)
         {
             if (delay > 0f) yield return new WaitForSeconds(delay);
 
@@ -162,6 +164,7 @@ namespace HorrorGame.UI
                 canvasGroup.interactable = true;
                 canvasGroup.blocksRaycasts = true;
             }
+            SetUiRaycastersEnabled(true);
         }
 
         /// <summary>Open the credits page.</summary>
@@ -240,5 +243,15 @@ namespace HorrorGame.UI
             Scene scene = SceneManager.GetActiveScene();
             SceneManager.LoadScene(scene.buildIndex >= 0 ? scene.buildIndex : 0);
         }
-    }
+    
+
+private void SetUiRaycastersEnabled(bool enabled)
+        {
+            var tracked = GetComponent<UnityEngine.XR.Interaction.Toolkit.UI.TrackedDeviceGraphicRaycaster>();
+            if (tracked != null) tracked.enabled = enabled;
+
+            var graphic = GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            if (graphic != null) graphic.enabled = enabled;
+        }
+}
 }

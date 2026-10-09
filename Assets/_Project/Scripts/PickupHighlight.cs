@@ -62,9 +62,15 @@ public class PickupHighlight : MonoBehaviour
         if (grab != null) grab.selectEntered.RemoveListener(OnGrabbed);
     }
 
-    private void Update()
+private void Update()
     {
         if (!active) return;
+
+        // Recreate the runtime-only block after a domain reload before applying
+        // the pulse to any merged-scene highlight renderers.
+        if (mpb == null)
+            mpb = new MaterialPropertyBlock();
+
         float t = 0.5f + 0.5f * Mathf.Sin(Time.time * pulseSpeed * Mathf.PI * 2f);
         float eased = t * t * (3f - 2f * t);
 
