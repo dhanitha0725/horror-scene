@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -65,6 +66,9 @@ namespace HorrorGame.UI
         private bool isShown;
         private bool isRestarting;
         private bool showingCredits;
+        private bool ghosted;
+        private TMP_Text[] resultTexts;
+        private string[] originalResultTexts;
 
         public bool IsShown => isShown;
 
@@ -82,6 +86,13 @@ private void Awake()
             if (playAgainButton != null) playAgainButton.onClick.AddListener(OnPlayAgainClicked);
             if (creditsButton != null) creditsButton.onClick.AddListener(ShowCredits);
             if (backButton != null) backButton.onClick.AddListener(ShowResult);
+            if (resultPanel != null)
+            {
+                resultTexts = resultPanel.GetComponentsInChildren<TMP_Text>(true);
+                originalResultTexts = new string[resultTexts.Length];
+                for (int i = 0; i < resultTexts.Length; i++)
+                    originalResultTexts[i] = resultTexts[i].text;
+            }
             Hide();
         }
 
@@ -140,9 +151,40 @@ private void Hide()
         [ContextMenu("Show End Screen Now")]
         public void ShowNow()
         {
+            if (ghosted || isShown || isRestarting) return;
+            SetResultText(false);
             scheduled = true;
             StopAllCoroutines();
             StartCoroutine(ShowAfterDelay(0f));
+        }
+
+        /// <summary>Show the loss result and wait for Play Again to reload the entire level.</summary>
+        public void ShowGhosted()
+        {
+            if (isShown || isRestarting) return;
+            ghosted = true;
+            scheduled = true;
+            StopAllCoroutines();
+            SetResultText(true);
+            StartCoroutine(ShowAfterDelay(0f));
+        }
+
+        private void SetResultText(bool lost)
+        {
+            if (resultTexts == null) return;
+            for (int i = 0; i < resultTexts.Length; i++)
+            {
+                TMP_Text text = resultTexts[i];
+                if (text == null) continue;
+                if (!lost) { text.text = originalResultTexts[i]; continue; }
+                switch (text.gameObject.name)
+                {
+                    case "ResultHeading": text.text = "<color=#E8413C>GHOSTED</color>"; break;
+                    case "SubtitleText": text.text = "Ward 9 claimed another soul"; break;
+                    case "ResultBody": text.text = "The ghost caught you before the ritual was complete."; break;
+                    case "ResultNote": text.text = "Your escape ends here.\n\nSelect Play Again to start over."; break;
+                }
+            }
         }
 
 private IEnumerator ShowAfterDelay(float delay)

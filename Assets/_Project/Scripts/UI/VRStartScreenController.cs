@@ -68,6 +68,9 @@ namespace HorrorGame.UI
         /// <summary>Set by the end screen's Play Again: after the reload, skip this screen and start playing at once.</summary>
         public static bool SkipStartScreenOnNextLoad = false;
 
+        /// <summary>True once Play has been pressed and the game is transitioning into gameplay.</summary>
+        public bool IsGameStartingOrStarted => isStarting;
+
         private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
