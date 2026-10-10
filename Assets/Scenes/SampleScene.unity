@@ -8281,11 +8281,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2441530280994503230, guid: ce4277df59c040341ab521230d5a9f52, type: 3}
---- !u!4 &883220687 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: 9c539f92992f4ba42bcf3150c6632aeb, type: 3}
-  m_PrefabInstance: {fileID: 139130755}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &877995331
 GameObject:
   m_ObjectHideFlags: 0
@@ -8439,6 +8434,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 877995331}
   m_CullTransparentMesh: 1
+--- !u!4 &883220687 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: 9c539f92992f4ba42bcf3150c6632aeb, type: 3}
+  m_PrefabInstance: {fileID: 139130755}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &907893300
 GameObject:
   m_ObjectHideFlags: 0
@@ -11415,7 +11415,7 @@ MonoBehaviour:
   fadeOutDuration: 0.75
   playStartSound: {fileID: 8300000, guid: c1e85918f41ff2840b250fb647282330, type: 3}
   audioSource: {fileID: 0}
-  backgroundMusic: {fileID: 8300000, guid: 585d4382469c75144a7ec177d811bab6, type: 3}
+  backgroundMusic: {fileID: 8300000, guid: 53e7fb4fa5afd594cacbb14510b31fcd, type: 3}
   musicAudioSource: {fileID: 0}
   musicVolume: 0.6
   overviewPanel: {fileID: 0}
@@ -16710,26 +16710,17 @@ Transform:
   - {fileID: 1397241295}
   m_Father: {fileID: 529030724}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!134 &1257027755
-PhysicsMaterial:
 --- !u!1 &1256571370
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1256571371}
   m_Layer: 0
-  m_Name: Content
+  m_Name: 
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16757,6 +16748,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!134 &1257027755
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &1258915182
 GameObject:
   m_ObjectHideFlags: 0
@@ -30177,19 +30181,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1576283495}
   m_CullTransparentMesh: 1
---- !u!134 &1576345011
-PhysicsMaterial:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 2
-  m_DynamicFriction: 0.6
-  m_StaticFriction: 0.6
-  m_Bounciness: 0
-  m_FrictionCombine: 0
-  m_BounceCombine: 0
 --- !u!1 &1603179998
 GameObject:
   m_ObjectHideFlags: 0
@@ -33510,6 +33501,8 @@ MonoBehaviour:
   showSound: {fileID: 0}
   clickSound: {fileID: 0}
   audioSource: {fileID: 0}
+  backgroundMusic: {fileID: 8300000, guid: 53e7fb4fa5afd594cacbb14510b31fcd, type: 3}
+  musicVolume: 0.6
   lockLocomotion: 1
 --- !u!82 &1893002322
 AudioSource:

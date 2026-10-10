@@ -49,6 +49,12 @@ namespace HorrorGame.UI
         [SerializeField] private AudioClip clickSound;
         [SerializeField] private AudioSource audioSource;
 
+        [Header("Background Music")]
+        [Tooltip("Music looped while the end screen is open. Stops when the screen closes (Play Again).")]
+        [SerializeField] private AudioClip backgroundMusic;
+        [SerializeField, Range(0f, 1f)] private float musicVolume = 0.6f;
+        private AudioSource musicSource;
+
         [Header("Player")]
         [Tooltip("Freeze CharacterController movement while the end screen is open.")]
         [SerializeField] private bool lockLocomotion = true;
@@ -151,11 +157,13 @@ private IEnumerator ShowAfterDelay(float delay)
             if (showSound != null && audioSource != null) audioSource.PlayOneShot(showSound);
 
             isShown = true;
+            StartMusic();
             float t = 0f;
             while (t < fadeInDuration)
             {
                 t += Time.deltaTime;
                 if (canvasGroup != null) canvasGroup.alpha = Mathf.Clamp01(t / fadeInDuration);
+                if (musicSource != null) musicSource.volume = musicVolume * Mathf.Clamp01(t / fadeInDuration);
                 yield return null;
             }
             if (canvasGroup != null)
@@ -188,6 +196,32 @@ private IEnumerator ShowAfterDelay(float delay)
             showingCredits = visible && creditsPanel != null;
             if (creditsPanel != null) creditsPanel.SetActive(showingCredits);
             if (resultPanel != null) resultPanel.SetActive(!showingCredits);
+        }
+
+        private void StartMusic()
+        {
+            if (backgroundMusic == null) return;
+            if (musicSource == null)
+            {
+                musicSource = gameObject.AddComponent<AudioSource>();
+                musicSource.playOnAwake = false;
+                musicSource.loop = true;
+                musicSource.spatialBlend = 0f; // 2D soundtrack
+            }
+            if (backgroundMusic.loadState == AudioDataLoadState.Unloaded) backgroundMusic.LoadAudioData();
+            musicSource.clip = backgroundMusic;
+            musicSource.volume = 0f;
+            if (!musicSource.isPlaying) musicSource.Play();
+        }
+
+        private void StopMusic()
+        {
+            if (musicSource != null && musicSource.isPlaying) musicSource.Stop();
+        }
+
+        private void OnDisable()
+        {
+            StopMusic();
         }
 
         private void PlayClick()
@@ -235,8 +269,11 @@ private IEnumerator ShowAfterDelay(float delay)
             {
                 t += Time.deltaTime;
                 if (canvasGroup != null) canvasGroup.alpha = 1f - Mathf.Clamp01(t / 0.5f);
+                if (musicSource != null) musicSource.volume = musicVolume * (1f - Mathf.Clamp01(t / 0.5f));
                 yield return null;
             }
+
+            StopMusic();
 
             // Reload the level and go straight to gameplay at the spawn position.
             VRStartScreenController.SkipStartScreenOnNextLoad = true;
