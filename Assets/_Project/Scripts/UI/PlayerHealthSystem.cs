@@ -3,6 +3,7 @@ using HorrorGame.AI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace HorrorGame.UI
@@ -19,26 +20,30 @@ namespace HorrorGame.UI
         private const float SafeRange = 5.5f;
         private const float MaximumDamagePerSecond = 16f;
         private const float RecoveryPerSecond = 11f;
-        private const float RespawnDelay = 2.25f;
-        private const float RespawnProtection = 3f;
         private const float ZTestAlways = (float)CompareFunction.Always;
 
         private float health = MaxHealth;
-        private float protectedUntil;
-        private bool respawning;
+        private bool defeated;
         private Camera playerCamera;
         private VRStartScreenController startScreen;
         private VREndScreenController endScreen;
-        private Transform playerRoot;
-        private CharacterController characterController;
-        private Vector3 spawnPosition;
-        private Quaternion spawnRotation;
         private Image fill;
         private Image dangerGlow;
         private TextMeshProUGUI percentage;
         private Texture2D grungeTexture;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void RegisterSceneLoading()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            CreateForScene();
+        }
+
         private static void CreateForScene()
         {
             if (FindAnyObjectByType<PlayerHealthSystem>() != null) return;
@@ -53,10 +58,6 @@ namespace HorrorGame.UI
 
             startScreen = FindAnyObjectByType<VRStartScreenController>();
             endScreen = FindAnyObjectByType<VREndScreenController>();
-            playerRoot = ResolvePlayerRoot(playerCamera.transform);
-            spawnPosition = playerRoot.position;
-            spawnRotation = playerRoot.rotation;
-            characterController = playerRoot.GetComponent<CharacterController>();
             BuildHud();
             RefreshHud();
             SetHudVisible(startScreen == null || !startScreen.gameObject.activeInHierarchy);
@@ -74,8 +75,9 @@ namespace HorrorGame.UI
                 SetHudVisible(false);
                 return;
             }
-            SetHudVisible(!respawning);
-            if (respawning || Time.time < protectedUntil) return;
+            bool gameEnded = defeated || (endScreen != null && endScreen.IsShown);
+            SetHudVisible(!gameEnded);
+            if (gameEnded) return;
 
             float nearestGhost = FindNearestActiveGhostDistance();
             if (nearestGhost <= DamageRange)
@@ -105,46 +107,23 @@ namespace HorrorGame.UI
         {
             health = Mathf.Clamp(value, 0f, MaxHealth);
             RefreshHud();
-            if (health <= 0f) StartCoroutine(Respawn());
+            if (health <= 0f) ShowDefeat();
         }
 
-        private IEnumerator Respawn()
+        private void ShowDefeat()
         {
-            if (respawning) yield break;
-            respawning = true;
+            if (defeated) return;
+            defeated = true;
             SetHudVisible(false);
             if (endScreen == null) endScreen = FindAnyObjectByType<VREndScreenController>();
-            if (endScreen != null)
-            {
-                endScreen.ShowNow();
-                yield break;
-            }
-
-            WorldMessage.ShowGlobal("GHOSTED", "The darkness drags you back to the beginning.", RespawnDelay, new Color(0.95f, 0.05f, 0.05f));
-            yield return new WaitForSeconds(RespawnDelay);
-            if (playerRoot != null)
-            {
-                bool controllerWasEnabled = characterController != null && characterController.enabled;
-                if (controllerWasEnabled) characterController.enabled = false;
-                playerRoot.SetPositionAndRotation(spawnPosition, spawnRotation);
-                if (controllerWasEnabled) characterController.enabled = true;
-            }
-            health = MaxHealth;
-            protectedUntil = Time.time + RespawnProtection;
-            respawning = false;
-            RefreshHud();
+            if (endScreen != null) endScreen.ShowGhosted();
+            else Debug.LogError("[PlayerHealthSystem] End screen missing; cannot show GHOSTED.", this);
         }
 
         private void ResolvePlayer()
         {
             playerCamera = Camera.main;
             if (playerCamera == null) playerCamera = FindFirstObjectByType<Camera>();
-        }
-
-        private static Transform ResolvePlayerRoot(Transform head)
-        {
-            CharacterController controller = head.GetComponentInParent<CharacterController>();
-            return controller != null ? controller.transform : head.root;
         }
 
         private void BuildHud()
