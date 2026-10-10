@@ -4939,7 +4939,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 566f6909b8a124547aad0c131df4fc14, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1921073141}
   m_SourcePrefab: {fileID: 100100000, guid: 566f6909b8a124547aad0c131df4fc14, type: 3}
 --- !u!1 &528868512
 GameObject:
@@ -11164,6 +11167,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1167710306}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1191301367 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 566f6909b8a124547aad0c131df4fc14, type: 3}
+  m_PrefabInstance: {fileID: 518740682}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1191952182
 GameObject:
   m_ObjectHideFlags: 0
@@ -33990,6 +33998,29 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 566f6909b8a124547aad0c131df4fc14, type: 3}
   m_PrefabInstance: {fileID: 518740682}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1921073141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191301367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b23cb6192e28337418f62c020611b8fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickupHighlight
+  outlineMaterial: {fileID: 2100000, guid: e31fcf5d2c042c24abf4232ee7514b0f, type: 2}
+  glowColor: {r: 1, g: 0.72, b: 0.3, a: 1}
+  outlineScale: 1.2
+  glowAlphaRange: {x: 0.25, y: 0.85}
+  addLight: 0
+  lightColor: {r: 1, g: 0.7, b: 0.35, a: 1}
+  lightRange: 1.6
+  lightIntensityRange: {x: 0.4, y: 2.2}
+  pulseSpeed: 1
+  hideAfterFirstGrab: 1
+  debugLogs: 0
 --- !u!1 &1945546648
 GameObject:
   m_ObjectHideFlags: 0

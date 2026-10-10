@@ -50,6 +50,15 @@ public class LockedSafe : MonoBehaviour
     [SerializeField] private Color lockedColor = new Color(0.85f, 0.05f, 0.05f);
     [SerializeField] private Color openedColor = new Color(1f, 0.8f, 0.2f);
 
+    [Header("Open Prompt")]
+    [Tooltip("Show a 'Press F to open' message when the player comes near with the key (and the guardian is defeated).")]
+    [SerializeField] private bool showOpenPrompt = true;
+    [SerializeField] private string promptTitle = "THE SAFE";
+    [SerializeField, TextArea(1, 4)] private string promptBody = "You have the key.\nPress <b>F</b> to open the safe.";
+    [SerializeField, Min(0.5f)] private float promptSeconds = 3f;
+    [Tooltip("Extra metres beyond Interact Range where the prompt appears.")]
+    [SerializeField, Min(0f)] private float promptExtraRange = 0.75f;
+
     [Header("Events")]
     [SerializeField] private UnityEvent onOpened;
 
@@ -59,6 +68,7 @@ public class LockedSafe : MonoBehaviour
     private Quaternion closedRotation;
     private float lastLockedTime = -999f;
     private Bounds cachedBounds;
+    private bool promptShown;
 
     public bool IsOpen { get; private set; }
     public bool GuardianDefeated { get; private set; }
@@ -80,6 +90,7 @@ public class LockedSafe : MonoBehaviour
 
     private void Update()
     {
+        UpdateOpenPrompt();
         if (IsOpen || !InteractPressed() || !PlayerCanReach()) return;
 
         bool hasKey = requiredKey != null && requiredKey.IsCollected;
@@ -100,6 +111,29 @@ public class LockedSafe : MonoBehaviour
             WorldMessage.ShowGlobal(lockedTitle, lockedBody, messageSeconds, lockedColor);
             if (debugLogs) Debug.Log("[LockedSafe] Locked: no key.", this);
         }
+    }
+
+    /// <summary>Shows 'Press F to open' once each time the player (with the key, guardian defeated) comes near.</summary>
+    private void UpdateOpenPrompt()
+    {
+        if (!showOpenPrompt || IsOpen) return;
+        bool ready = requiredKey != null && requiredKey.IsCollected && (!requireGuardianDefeated || GuardianDefeated);
+        float d = PlayerEdgeDistance();
+        bool near = d <= interactRange + promptExtraRange;
+        if (ready && near && !promptShown)
+        {
+            promptShown = true;
+            WorldMessage.ShowGlobal(promptTitle, promptBody, promptSeconds, openedColor);
+        }
+        else if (d > interactRange + promptExtraRange + 1f) promptShown = false; // walked away: show again next time
+    }
+
+    private float PlayerEdgeDistance()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return float.MaxValue;
+        Vector3 to = Vector3.ProjectOnPlane(cachedBounds.center - cam.transform.position, Vector3.up);
+        return Mathf.Max(0f, to.magnitude - Mathf.Max(cachedBounds.extents.x, cachedBounds.extents.z));
     }
 
     private bool InteractPressed()
