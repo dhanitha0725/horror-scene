@@ -35585,7 +35585,7 @@ MonoBehaviour:
   triggerDistance: 3.5
   fallDuration: 0.9
   fallAngle: 88
-  warningCreak: {fileID: 0}
+  warningCreak: {fileID: 8300000, guid: 5216bc0ced4a4d57a18c6b8b6af6941a, type: 3}
   impactSound: {fileID: 0}
 --- !u!1 &2130240656
 GameObject:
