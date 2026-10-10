@@ -13,11 +13,13 @@ public class HangingCrossTrap : MonoBehaviour
     [SerializeField] private AudioSource crossAudio;
     [SerializeField] private AudioClip rotateClip;
 
-    [Header("Trigger (distance check, like ProximityHorrorAmbush)")]
-    [SerializeField, Min(0.5f)] private float triggerDistance = 5.5f;
+    [Header("Trigger (close range and clear gaze)")]
+    [SerializeField, Min(0.5f)] private float triggerDistance = 3f;
+    [SerializeField, Range(1f, 90f)] private float gazeHalfAngle = 20f;
+    [SerializeField, Min(0f)] private float gazeDuration = 0.3f;
     [SerializeField] private float resetHysteresis = 1.5f;
-    [SerializeField] private bool resetWhenPlayerLeaves = true;
-    [SerializeField] private bool triggerOnlyOnce = false;
+    [SerializeField] private bool resetWhenPlayerLeaves = false;
+    [SerializeField] private bool triggerOnlyOnce = true;
 
     [Header("Rotation / Audio sync")]
     [SerializeField] private float rotationAngle = 180f;
@@ -44,6 +46,8 @@ public class HangingCrossTrap : MonoBehaviour
     private Coroutine activeRoutine;
     private float baseLightIntensity = -1f;
     private bool audioConfigured;
+    private float gazeTime;
+    private Renderer crossRenderer;
 
     private void Awake()
     {
@@ -53,7 +57,10 @@ public class HangingCrossTrap : MonoBehaviour
         ConfigureAudio();
 
         if (nailPivot != null)
+        {
             pivotStartRotation = nailPivot.localRotation;
+            crossRenderer = nailPivot.GetComponentInChildren<Renderer>();
+        }
     }
 
     private void ConfigureAudio()
@@ -94,13 +101,19 @@ public class HangingCrossTrap : MonoBehaviour
                 return;
         }
 
-        Vector3 delta = player.position - transform.position;
-        delta.y = 0f;
+        Vector3 target = crossRenderer != null ? crossRenderer.bounds.center : nailPivot.position;
+        Vector3 delta = player.position - target;
         float distance = delta.magnitude;
 
         if (!hasStartedRotation && !hasFired)
         {
-            if (distance <= triggerDistance)
+            bool watchingNearbyCross = distance <= triggerDistance && IsWatching(target);
+            if (watchingNearbyCross)
+                gazeTime += Time.deltaTime;
+            else
+                gazeTime = 0f;
+
+            if (watchingNearbyCross && gazeTime >= gazeDuration)
                 Trigger();
         }
         else if (resetWhenPlayerLeaves && hasStartedRotation && !triggerOnlyOnce)
@@ -110,12 +123,33 @@ public class HangingCrossTrap : MonoBehaviour
         }
     }
 
+    private bool IsWatching(Vector3 target)
+    {
+        Vector3 direction = target - player.position;
+        float length = direction.magnitude;
+        if (length < 0.001f) return false;
+        direction /= length;
+        if (Vector3.Dot(player.forward, direction) < Mathf.Cos(gazeHalfAngle * Mathf.Deg2Rad))
+            return false;
+
+        // Ignore the player's rig and the cross itself, but reject intervening walls/objects.
+        foreach (RaycastHit hit in Physics.RaycastAll(player.position, direction, length, ~0, QueryTriggerInteraction.Ignore))
+        {
+            Transform obstacle = hit.collider.transform;
+            if (obstacle.IsChildOf(player.root) || obstacle.IsChildOf(transform) || obstacle.IsChildOf(nailPivot))
+                continue;
+            return false;
+        }
+        return true;
+    }
+
     public void Trigger()
     {
-        if (isRotating)
+        if (isRotating || nailPivot == null || (triggerOnlyOnce && hasFired))
             return;
 
         hasStartedRotation = true;
+        gazeTime = 0f;
         hasFired = true;
         StopActiveRoutine();
         activeRoutine = StartCoroutine(RotateRoutine(0f, rotationAngle));
