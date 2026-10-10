@@ -49,6 +49,12 @@ namespace HorrorGame.UI
         [SerializeField] private AudioClip clickSound;
         [SerializeField] private AudioSource audioSource;
 
+        [Header("Background Music")]
+        [Tooltip("Music looped while the end screen is open. Stops when the screen closes (Play Again).")]
+        [SerializeField] private AudioClip backgroundMusic;
+        [SerializeField, Range(0f, 1f)] private float musicVolume = 0.6f;
+        private AudioSource musicSource;
+
         [Header("Player")]
         [Tooltip("Freeze CharacterController movement while the end screen is open.")]
         [SerializeField] private bool lockLocomotion = true;
@@ -62,7 +68,7 @@ namespace HorrorGame.UI
 
         public bool IsShown => isShown;
 
-        private void Awake()
+private void Awake()
         {
             canvasGroup = GetComponent<CanvasGroup>();
             if (audioSource == null) audioSource = GetComponent<AudioSource>();
@@ -72,13 +78,14 @@ namespace HorrorGame.UI
                 audioSource.playOnAwake = false;
                 audioSource.spatialBlend = 0f;
             }
+
             if (playAgainButton != null) playAgainButton.onClick.AddListener(OnPlayAgainClicked);
             if (creditsButton != null) creditsButton.onClick.AddListener(ShowCredits);
             if (backButton != null) backButton.onClick.AddListener(ShowResult);
             Hide();
         }
 
-        private void Hide()
+private void Hide()
         {
             isShown = false;
             if (canvasGroup != null)
@@ -89,6 +96,7 @@ namespace HorrorGame.UI
             }
             if (contentRoot != null) contentRoot.SetActive(false);
             SetCreditsVisible(false);
+            SetUiRaycastersEnabled(false);
         }
 
         private void Update()
@@ -137,7 +145,7 @@ namespace HorrorGame.UI
             StartCoroutine(ShowAfterDelay(0f));
         }
 
-        private IEnumerator ShowAfterDelay(float delay)
+private IEnumerator ShowAfterDelay(float delay)
         {
             if (delay > 0f) yield return new WaitForSeconds(delay);
 
@@ -149,11 +157,13 @@ namespace HorrorGame.UI
             if (showSound != null && audioSource != null) audioSource.PlayOneShot(showSound);
 
             isShown = true;
+            StartMusic();
             float t = 0f;
             while (t < fadeInDuration)
             {
                 t += Time.deltaTime;
                 if (canvasGroup != null) canvasGroup.alpha = Mathf.Clamp01(t / fadeInDuration);
+                if (musicSource != null) musicSource.volume = musicVolume * Mathf.Clamp01(t / fadeInDuration);
                 yield return null;
             }
             if (canvasGroup != null)
@@ -162,6 +172,7 @@ namespace HorrorGame.UI
                 canvasGroup.interactable = true;
                 canvasGroup.blocksRaycasts = true;
             }
+            SetUiRaycastersEnabled(true);
         }
 
         /// <summary>Open the credits page.</summary>
@@ -185,6 +196,32 @@ namespace HorrorGame.UI
             showingCredits = visible && creditsPanel != null;
             if (creditsPanel != null) creditsPanel.SetActive(showingCredits);
             if (resultPanel != null) resultPanel.SetActive(!showingCredits);
+        }
+
+        private void StartMusic()
+        {
+            if (backgroundMusic == null) return;
+            if (musicSource == null)
+            {
+                musicSource = gameObject.AddComponent<AudioSource>();
+                musicSource.playOnAwake = false;
+                musicSource.loop = true;
+                musicSource.spatialBlend = 0f; // 2D soundtrack
+            }
+            if (backgroundMusic.loadState == AudioDataLoadState.Unloaded) backgroundMusic.LoadAudioData();
+            musicSource.clip = backgroundMusic;
+            musicSource.volume = 0f;
+            if (!musicSource.isPlaying) musicSource.Play();
+        }
+
+        private void StopMusic()
+        {
+            if (musicSource != null && musicSource.isPlaying) musicSource.Stop();
+        }
+
+        private void OnDisable()
+        {
+            StopMusic();
         }
 
         private void PlayClick()
@@ -232,13 +269,26 @@ namespace HorrorGame.UI
             {
                 t += Time.deltaTime;
                 if (canvasGroup != null) canvasGroup.alpha = 1f - Mathf.Clamp01(t / 0.5f);
+                if (musicSource != null) musicSource.volume = musicVolume * (1f - Mathf.Clamp01(t / 0.5f));
                 yield return null;
             }
+
+            StopMusic();
 
             // Reload the level and go straight to gameplay at the spawn position.
             VRStartScreenController.SkipStartScreenOnNextLoad = true;
             Scene scene = SceneManager.GetActiveScene();
             SceneManager.LoadScene(scene.buildIndex >= 0 ? scene.buildIndex : 0);
         }
-    }
+    
+
+private void SetUiRaycastersEnabled(bool enabled)
+        {
+            var tracked = GetComponent<UnityEngine.XR.Interaction.Toolkit.UI.TrackedDeviceGraphicRaycaster>();
+            if (tracked != null) tracked.enabled = enabled;
+
+            var graphic = GetComponent<UnityEngine.UI.GraphicRaycaster>();
+            if (graphic != null) graphic.enabled = enabled;
+        }
+}
 }

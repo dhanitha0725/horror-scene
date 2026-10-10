@@ -167,13 +167,22 @@ public class FlickeringLight : MonoBehaviour
         burstRoutine = null;
     }
 
-    private void Apply(float factor)
+private void Apply(float factor)
     {
         factor = Mathf.Max(0f, factor);
-        lightComp.intensity = baseIntensity * factor;
+
+        // OnDisable can run during a scene/domain reload before Awake has rebuilt
+        // these runtime-only references.
+        if (lightComp == null)
+            lightComp = GetComponent<Light>();
+        if (lightComp != null)
+            lightComp.intensity = baseIntensity * factor;
 
         if (bulbRenderer != null)
         {
+            if (mpb == null)
+                mpb = new MaterialPropertyBlock();
+
             bulbRenderer.GetPropertyBlock(mpb);
             mpb.SetColor(EmissionId, emissionColor * factor);
             bulbRenderer.SetPropertyBlock(mpb);
