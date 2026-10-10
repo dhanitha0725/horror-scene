@@ -10021,10 +10021,12 @@ MonoBehaviour:
   nailPivot: {fileID: 1853610012}
   crossAudio: {fileID: 645250821}
   rotateClip: {fileID: 8300000, guid: 2ccfd55777b159a42921213659e88d38, type: 3}
-  triggerDistance: 7.5
+  triggerDistance: 3
+  gazeHalfAngle: 20
+  gazeDuration: 0.3
   resetHysteresis: 1.5
-  resetWhenPlayerLeaves: 1
-  triggerOnlyOnce: 0
+  resetWhenPlayerLeaves: 0
+  triggerOnlyOnce: 1
   rotationAngle: 180
   useClipLengthAsDuration: 0
   rotationDuration: 6
